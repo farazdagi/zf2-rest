@@ -17,6 +17,13 @@ Alternatively:
 
 CHANGELOG
 ------------
+Version 0.2:
+
+- Updated ZF2 Lib (2238faa)
+- Created custom Http\PhpEnvironment\Request (to handle custom HTTP types)
+- Controller skeletons created
+- User and Gist models defined
+
 Version 0.1:
 
 - Integrated [ZendSkeletonApplication](https://github.com/zendframework/ZendSkeletonApplication)
