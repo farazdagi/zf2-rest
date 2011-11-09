@@ -1,0 +1,2 @@
+#! /bin/sh
+./modules/SpiffyDoctrine/bin/doctrine orm:schema-tool:update --force
