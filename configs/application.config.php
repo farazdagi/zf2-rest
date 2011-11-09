@@ -6,6 +6,7 @@ return array(
     'modules' => array(
         'SpiffyDoctrine',
         'Application',
+        'Gists',
     ),
     'module_manager_options' => array(
         'enable_config_cache'      => false,
