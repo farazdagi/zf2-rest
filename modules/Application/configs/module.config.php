@@ -3,11 +3,23 @@ return array(
     'bootstrap_class' => 'Application\Bootstrap',
     'layout'          => 'layouts/layout.phtml',
     'di'              => array(
+        'definition' => array(
+            'class' => array(
+                'Gists\Service\Api' => array(
+                    'methods' => array(
+                            '__construct' => array(
+                                'em'   => array('type' => 'doctrine', 'required' => true),
+                            )
+                    )
+                )
+            ),
+        ),
         'instance' => array(
             'alias' => array(
                 'index' => 'Application\Controller\IndexController',
                 'error' => 'Application\Controller\ErrorController',
                 'view'  => 'Zend\View\PhpRenderer',
+                'api'           => 'Gists\Service\Api',
             ),
 
             'Zend\View\HelperLoader' => array(
