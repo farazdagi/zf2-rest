@@ -7,7 +7,6 @@ This is simple demonstration of implementing RESTful web-service using ZF2.
 
 Installation
 ------------
-Fork & Play
 
     git clone --recursive git@github.com:farazdagi/zf2-rest.git
 
