@@ -35,6 +35,30 @@ return array(
                     'broker' => 'Zend\View\HelperBroker',
                 ),
             ),
+            'doctrine' => array(
+                'parameters' => array(
+                    'conn' => array(
+                        'driver'   => 'pdo_mysql',
+                        'host'     => 'localhost',
+                        'port'     => '3306',
+                        'user'     => 'zf2gists',
+                        'password' => 'zf2gists',
+                        'dbname'   => 'zf2gists',
+                    ),
+                    'config' => array(
+                        'metadata_driver_impl' => array(
+                            // to add multiple drivers just follow the format below and give them a different keyed name
+                            // cache_class is only required for annotation drivers
+                            'application_annotation_driver' => array(
+                                'class' => 'Doctrine\ORM\Mapping\Driver\AnnotationDriver',
+                                'namespace' => 'Gists\Entity',
+                                'paths' => array(__DIR__ . '/../../Gists/src/Gists/Entity'),
+                                'cache_class' => 'Doctrine\Common\Cache\ArrayCache',
+                            )
+                        )
+                    )
+                ),
+            ),
         ),
     ),
 
