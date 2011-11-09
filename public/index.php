@@ -26,5 +26,12 @@ $moduleManager = new Zend\Module\Manager(
 // Create application, bootstrap, and run
 $bootstrap      = new Zend\Mvc\Bootstrap($moduleManager);
 $application    = new Zend\Mvc\Application;
+
+// this step is not generally needed as default request is good enough for most setups
+// however since we want to accept different HTTP methods (such as PATCH) we need
+// to redefine the request class used
+$request = new Application\Http\Request();
+$application->setRequest($request->factory());
+
 $bootstrap->bootstrap($application);
 $application->run()->send();
