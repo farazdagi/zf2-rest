@@ -12,6 +12,24 @@ class Request extends BaseRequest
     const METHOD_PATCH = 'PATCH';
     /**#@-*/
 
+    protected $rawPostData = '{}';
+
+    public function __construct()
+    {
+        parent::__construct();
+        $this->setRawPostData(file_get_contents('php://input'));
+    }
+
+    public function setRawPostData($data)
+    {
+        $this->rawPostData = $data;
+    }
+
+    public function getRawPostData()
+    {
+        return $this->rawPostData;
+    }
+
     /**
      * Is this a PATCH method request?
      *
