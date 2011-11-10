@@ -64,7 +64,7 @@ class IndexController extends RestfulController
         $property = $this->getEvent()->getRouteMatch()->getParam('property');
         if ($property) {
             return $this->getService()
-                        ->updateProperty($id, $property, $data);
+                        ->putProperty($id, $property, $data);
         }
         return $this->generateResponse(400, 'Bad Request');
     }
