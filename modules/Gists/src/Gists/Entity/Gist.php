@@ -32,6 +32,21 @@ class Gist
      */
     protected $content;
 
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    protected $starred = 0;
+
+    public function getRepresentation()
+    {
+        $repr = new \StdClass;
+        $repr->id = $this->getId();
+        $repr->user = '/users/' . $this->getUser()->getId();
+        $repr->description = $this->getDescription();
+        $repr->content = $this->getContent();
+        $repr->starred = $this->getStarred();
+        return $repr;
+    }
 
     /**
      * Get id
@@ -101,5 +116,25 @@ class Gist
     public function getUser()
     {
         return $this->user;
+    }
+
+    /**
+     * Set starred
+     *
+     * @param boolean $starred
+     */
+    public function setStarred($starred)
+    {
+        $this->starred = $starred;
+    }
+
+    /**
+     * Get starred
+     *
+     * @return boolean
+     */
+    public function getStarred()
+    {
+        return $this->starred;
     }
 }
