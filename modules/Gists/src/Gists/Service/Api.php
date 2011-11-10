@@ -51,7 +51,7 @@ class Api
             foreach ($gists as $gist) {
                 $items[] = $gist->getRepresentation();
             }
-            return $this->generateResponse(200, 'Ok', Json::encode($items));
+            return $this->generateResponse(200, 'OK', Json::encode($items));
         }
 
         return $this->generateResponse(404, 'Not Found');
@@ -62,7 +62,7 @@ class Api
         $gist = $this->em->find('Gists\Entity\Gist', $id);
         if ($gist) {
             $repr = Json::encode($gist->getRepresentation());
-            return $this->generateResponse(200, 'Ok', $repr);
+            return $this->generateResponse(200, 'OK', $repr);
         }
         return $this->generateResponse(404, 'Not Found');
     }
@@ -99,6 +99,27 @@ class Api
             }
         }
 
+        return $this->generateResponse(400, 'Bad Request');
+    }
+
+    public function patch($id, $data)
+    {
+        $repr = Json::decode($data);
+        $gist = $this->em->find('Gists\Entity\Gist', $id);
+        if ($gist) {
+            $gist->setDescription(
+                isset($repr->description) ? $repr->description : $gist->getDescription());
+            $gist->setContent(
+                isset($repr->content) ? $repr->content : $gist->getContent());
+            $gist->setStarred(
+                isset($repr->starred) ? $repr->starred : $gist->getStarred());
+            try {
+                $this->em->flush();
+                return $this->generateResponse(200, 'OK', Json::encode($gist->getRepresentation()));
+            } catch (\Exception $e) {
+                // log, process error, re-throw
+            }
+        }
         return $this->generateResponse(400, 'Bad Request');
     }
 
