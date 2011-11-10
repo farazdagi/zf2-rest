@@ -170,9 +170,42 @@ class ApiTest extends TestCase
 
     /**
      * DELETE /gists/:id
+     * @group cur
      */
     public function testDeleteGist()
-    {}
+    {
+        // create gist
+        $gist = $this->createGist('testDeleteGist', 'function bar() {}');
+
+        // ensure that gist exists
+        $response = $this->getService()
+                         ->get(1);
+
+        $this->assertInstanceOf('\Zend\\Http\\Response', $response);
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame('Ok', $response->getReasonPhrase());
+
+        $gist = Json::decode(stripslashes($response->getBody()));
+        $this->assertSame(1, $gist->id);
+        $this->assertSame('/users/1', $gist->user);
+        $this->assertSame('testDeleteGist', $gist->description);
+
+        // delete
+        $response = $this->getService()
+                         ->delete($gist->id);
+
+        $this->assertInstanceOf('\Zend\\Http\\Response', $response);
+        $this->assertSame(204, $response->getStatusCode());
+        $this->assertSame('No Content', $response->getReasonPhrase());
+
+        // ensure that gist was delete
+        $response = $this->getService()
+                         ->get($gist->id);
+
+        $this->assertInstanceOf('\Zend\\Http\\Response', $response);
+        $this->assertSame(404, $response->getStatusCode());
+        $this->assertSame('Not Found', $response->getReasonPhrase());
+    }
 
     /**
      * Initialize and get service

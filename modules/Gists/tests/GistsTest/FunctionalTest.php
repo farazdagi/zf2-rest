@@ -155,7 +155,6 @@ class FunctionalTest extends Framework\TestCase
 
     /**
      * GET /gists/:id/star
-     * @group cur
      */
     public function testIsGistStared()
     {
@@ -178,8 +177,50 @@ class FunctionalTest extends Framework\TestCase
     /**
      * DELETE /gists/:id
      */
+    public function testDeleteGistNonExistent()
+    {
+        // delete no-exitent gist
+        $result = $this
+            ->getCurl()
+            ->request('DELETE', '/gists/42');
+
+        $this->assertSame('HTTP/1.1 404 Not Found', $result['status']);
+    }
+
+    /**
+     * DELETE /gists/:id
+     */
     public function testDeleteGist()
-    {}
+    {
+        // create gist
+        $gist = $this->createGist('testDeleteGist', 'function bar() {}');
+
+        // ensure that gist exists
+        $result = $this
+            ->getCurl()
+            ->request('GET', $gist->value);
+
+        $this->assertSame('HTTP/1.1 200 Ok', $result['status']);
+
+        $gist = Json::decode(stripslashes($result['body']));
+        $this->assertSame(1, $gist->id);
+        $this->assertSame('/users/1', $gist->user);
+        $this->assertSame('testDeleteGist', $gist->description);
+
+        // delete
+        $result = $this
+            ->getCurl()
+            ->request('DELETE', $gist->url);
+
+        $this->assertSame('HTTP/1.1 204 No Content', $result['status']);
+
+        // ensure that gist was delete
+        $result = $this
+            ->getCurl()
+            ->request('GET', $gist->url);
+
+        $this->assertSame('HTTP/1.1 404 Not Found', $result['status']);
+    }
 
     protected function getCurl()
     {
