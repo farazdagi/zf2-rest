@@ -102,6 +102,31 @@ class Api
         return $this->generateResponse(400, 'Bad Request');
     }
 
+    public function delete($id)
+    {
+        $gist = $this->em->find('Gists\Entity\Gist', $id);
+        if ($gist) {
+            $this->em->remove($gist);
+            $this->em->flush();
+            return $this->generateResponse(204, 'No Content', '');
+        }
+        return $this->generateResponse(404, 'Not Found');
+    }
+
+    public function deleteProperty($id, $property)
+    {
+        // strategy pattern will be a better solution here
+        if ('star' === $property) {
+            $gist = $this->em->find('Gists\Entity\Gist', $id);
+            if ($gist) {
+                $gist->setStarred(0);
+                $this->em->flush();
+                return $this->generateResponse(204, 'No Content', '');
+            }
+        }
+        return $this->generateResponse(404, 'Not Found');
+    }
+
     protected function getUserEntity()
     {
         return $this->em
@@ -109,7 +134,7 @@ class Api
             ->findOneBy(array('username' => $this->username));
     }
 
-    protected function generateResponse($statusCode, $reason, $content = '[]', $headers = array())
+    protected function generateResponse($statusCode, $reason, $content = null, $headers = array())
     {
         $response = new \Zend\Http\PhpEnvironment\Response;
         $response->setStatusCode($statusCode);
