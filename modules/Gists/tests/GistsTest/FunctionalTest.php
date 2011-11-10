@@ -4,8 +4,14 @@ namespace GistsTest;
 use Zend\Json\Json;
 
 
-class BundleTest extends \PHPUnit_Framework_TestCase
+class FunctionalTest extends Framework\TestCase
 {
+    public function setUp()
+    {
+        parent::setup();    // manners
+        $this->createDb();  // pdo_sqlite test db
+    }
+
     /**
      * GET /gists
      */
@@ -26,9 +32,8 @@ class BundleTest extends \PHPUnit_Framework_TestCase
 
     /**
      * POST /gists
-     * @group cur
      */
-    public function testCreateGist()
+    public function testCreateGistFailed()
     {
         // try to create gist w/o providing required field
         $repr = new \StdClass;
@@ -38,8 +43,15 @@ class BundleTest extends \PHPUnit_Framework_TestCase
             ->post('/gists', Json::encode($repr));
 
         $this->assertSame('HTTP/1.1 400 Bad Request', $result['status']);
+    }
 
-        // now add required data and retry
+    /**
+     * POST /gists
+     */
+    public function testCreateGistOk()
+    {
+        // try to create gist w/o providing required field
+        $repr = new \StdClass;
         $repr->description = 'Some desc';
         $repr->content = 'function foo() {}';
 
