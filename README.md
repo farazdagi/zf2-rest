@@ -15,6 +15,10 @@ Alternatively:
     git clone git@github.com:farazdagi/zf2-rest.git
     git submodule update --init --recursive
 
+In order to run tests you need to create database:
+
+    INSERT INTO users VALUES (1, 'horus'), (3, 'fulgrim');
+
 CHANGELOG
 ------------
 Version 0.2:

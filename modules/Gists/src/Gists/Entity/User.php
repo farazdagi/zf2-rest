@@ -23,7 +23,7 @@ class User
     protected $username;
 
     /**
-     * @ORM\OneToMany(targetEntity="Gist", mappedBy="user")
+     * @ORM\OneToMany(targetEntity="Gist", mappedBy="user", cascade={"persist", "remove", "merge"}, orphanRemoval=true)
      * @ORM\OrderBy({"dateCreated" = "DESC"})
      */
     protected $gists;
@@ -41,7 +41,7 @@ class User
     {
         $this->gists = new \Doctrine\Common\Collections\ArrayCollection();
     }
-    
+
     /**
      * Set username
      *
@@ -55,7 +55,7 @@ class User
     /**
      * Get username
      *
-     * @return string 
+     * @return string
      */
     public function getUsername()
     {
@@ -75,7 +75,7 @@ class User
     /**
      * Get gists
      *
-     * @return Doctrine\Common\Collections\Collection 
+     * @return Doctrine\Common\Collections\Collection
      */
     public function getGists()
     {

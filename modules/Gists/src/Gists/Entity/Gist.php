@@ -32,11 +32,27 @@ class Gist
      */
     protected $content;
 
+    /**
+     * @ORM\Column(type="boolean")
+     */
+    protected $starred = 0;
+
+    public function getRepresentation()
+    {
+        $repr = new \StdClass;
+        $repr->id = $this->getId();
+        $repr->user = '/users/' . $this->getUser()->getId();
+        $repr->description = $this->getDescription();
+        $repr->content = $this->getContent();
+        $repr->starred = (int)$this->getStarred();
+        $repr->url = '/gists/' . $this->getId();
+        return $repr;
+    }
 
     /**
      * Get id
      *
-     * @return integer 
+     * @return integer
      */
     public function getId()
     {
@@ -56,7 +72,7 @@ class Gist
     /**
      * Get description
      *
-     * @return string 
+     * @return string
      */
     public function getDescription()
     {
@@ -76,7 +92,7 @@ class Gist
     /**
      * Get content
      *
-     * @return text 
+     * @return text
      */
     public function getContent()
     {
@@ -96,10 +112,30 @@ class Gist
     /**
      * Get user
      *
-     * @return Gists\Entity\User 
+     * @return Gists\Entity\User
      */
     public function getUser()
     {
         return $this->user;
+    }
+
+    /**
+     * Set starred
+     *
+     * @param boolean $starred
+     */
+    public function setStarred($starred)
+    {
+        $this->starred = $starred;
+    }
+
+    /**
+     * Get starred
+     *
+     * @return boolean
+     */
+    public function getStarred()
+    {
+        return $this->starred;
     }
 }

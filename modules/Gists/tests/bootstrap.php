@@ -20,9 +20,21 @@ $moduleLoader = new \Zend\Loader\ModuleAutoloader(array(
 ));
 $moduleLoader->register();
 
-$moduleManager = new \Zend\Module\Manager(array('Gists'));
-$moduleManager->loadModule('Gists');
+$moduleManager = new \Zend\Module\Manager(array('SpiffyDoctrine', 'Application', 'Gists'));
+$moduleManager->loadModules();
 
-//$config = $moduleManager->getMergedConfig()->toArray();
+$mergedConfig = $moduleManager->getMergedConfig()->toArray();
 
-//\GistsTest\TestCase::$config = $config;
+// you can setup sqlite database for testing
+// right now I use single mysql database for tests
+/*
+$config = &$mergedConfig['di']['instance']['doctrine']['parameters'];
+$config['conn'] = array(
+    'driver' => 'pdo_sqlite',
+    'path'   => __DIR__ . '/test-db'
+);
+//*/
+
+// test case in turn setups (and exposes) service locator, entity manager etc
+\GistsTest\Framework\TestCase::$config = $mergedConfig;
+unset($config, $mergedConfig, $moduleManager, $path, $testsPath, $rootPath);
