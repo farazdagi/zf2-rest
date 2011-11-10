@@ -36,6 +36,46 @@ class Api
         return $this;
     }
 
+    public function getList($filter = null)
+    {
+        $filters = array();
+        if ($filter) {
+            $filters[$filter] = '1';
+        }
+        $gists = $this->em
+            ->getRepository('Gists\Entity\Gist')
+            ->findBy($filters);
+
+        if (count($gists)) {
+            $items = array();
+            foreach ($gists as $gist) {
+                $items[] = $gist->getRepresentation();
+            }
+            return $this->generateResponse(200, 'Ok', Json::encode($items));
+        }
+
+        return $this->generateResponse(404, 'Not Found');
+    }
+
+    public function get($id)
+    {
+        $gist = $this->em->find('Gists\Entity\Gist', $id);
+        if ($gist) {
+            $repr = Json::encode($gist->getRepresentation());
+            return $this->generateResponse(200, 'Ok', $repr);
+        }
+        return $this->generateResponse(404, 'Not Found');
+    }
+
+    public function isStarred($id)
+    {
+        $gist = $this->em->find('Gists\Entity\Gist', $id);
+        if ($gist->getStarred()) {
+            return $this->generateResponse(204, 'No Content', '');
+        }
+        return $this->generateResponse(404, 'Not Found');
+    }
+
     public function create($data)
     {
         $repr = Json::decode($data);
@@ -45,7 +85,10 @@ class Api
             $gist = new GistEntity();
             $gist->setDescription(isset($repr->description)?$repr->description:null);
             $gist->setContent(isset($repr->content)?$repr->content:null);
+            $gist->setStarred(isset($repr->starred)?$repr->starred:0);
+            $gist->setUser($user);
             $user->addGist($gist);
+            $this->em->persist($gist);
             try {
                 $this->em->flush();
                 return $this->generateResponse(201, 'Created', null, array(
@@ -66,7 +109,7 @@ class Api
             ->findOneBy(array('username' => $this->username));
     }
 
-    protected function generateResponse($statusCode, $reason, $content = null, $headers = array())
+    protected function generateResponse($statusCode, $reason, $content = '[]', $headers = array())
     {
         $response = new \Zend\Http\PhpEnvironment\Response;
         $response->setStatusCode($statusCode);

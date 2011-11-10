@@ -16,10 +16,9 @@ class IndexController extends RestfulController
      */
     public function getList()
     {
-        if ($filter = $this->getEvent()->getRouteMatch()->getParam('filter')) {
-            return 'GET gists/' . $filter;
-        }
-        return 'GET gists';
+        $filter = $this->getEvent()->getRouteMatch()->getParam('filter', null);
+        return $this->getService()
+                    ->getList($filter);
     }
 
     /**
@@ -30,10 +29,13 @@ class IndexController extends RestfulController
      */
     public function get($id)
     {
-        if ($property = $this->getEvent()->getRouteMatch()->getParam('property')) {
-            return 'GET gists/:' . $id . '/:' . $property;
+        $property = $this->getEvent()->getRouteMatch()->getParam('property', null);
+        if ($property == 'star') {
+            return $this->getService()
+                        ->isStarred($id);
         }
-        return 'GET gists/:' . $id;
+        return $this->getService()
+                    ->get($id);
     }
 
     /**
@@ -44,14 +46,10 @@ class IndexController extends RestfulController
      */
     public function create($data)
     {
-        return $this
-            ->getLocator()->get('api')
-            ->setUserCredentials(
-                $this->getRequest()->server()->get('PHP_AUTH_USER', null),
-                $this->getRequest()->server()->get('PHP_AUTH_PW', null)
-            )
-            ->create($data);
+        return $this->getService()
+                    ->create($data);
     }
+
 
     /**
      * Update an existing gist property (property should be entity)
@@ -64,6 +62,10 @@ class IndexController extends RestfulController
      */
     public function update($id, $data)
     {
+        $filter = $this
+            ->getEvent()
+            ->getRouteMatch()
+            ->getParam('filter');
         if ($property = $this->getEvent()->getRouteMatch()->getParam('property')) {
             return 'PUT gists/:' . $id . '/:' . $property;
         }
@@ -94,6 +96,21 @@ class IndexController extends RestfulController
             return 'DELETE gists/:' . $id . '/:' . $property;
         }
         return 'DELETE gists/:' . $id;
+    }
+
+    /**
+     * Initialize and get service
+     *
+     * @return Gists\Service\Api
+     */
+    protected function getService()
+    {
+        return $this
+            ->getLocator()->get('api')
+            ->setUserCredentials(
+                $this->getRequest()->server()->get('PHP_AUTH_USER', null),
+                $this->getRequest()->server()->get('PHP_AUTH_PW', null)
+            );
     }
 
 }
