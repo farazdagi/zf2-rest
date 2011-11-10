@@ -4,7 +4,8 @@ namespace Gists\Controller;
 
 use Gists\Mvc\Controller\RestfulController,
     Zend\Http\Exception\InvalidArgumentException,
-    Zend\Mvc\MvcEvent;
+    Zend\Mvc\MvcEvent,
+    Zend\Http;
 
 class IndexController extends RestfulController
 {
@@ -43,7 +44,13 @@ class IndexController extends RestfulController
      */
     public function create($data)
     {
-        return 'POST /gists';
+        return $this
+            ->getLocator()->get('api')
+            ->setUserCredentials(
+                $this->getRequest()->server()->get('PHP_AUTH_USER', null),
+                $this->getRequest()->server()->get('PHP_AUTH_PW', null)
+            )
+            ->create($data);
     }
 
     /**
