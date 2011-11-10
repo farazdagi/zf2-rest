@@ -70,7 +70,7 @@ class Api
     public function isStarred($id)
     {
         $gist = $this->em->find('Gists\Entity\Gist', $id);
-        if ($gist->getStarred()) {
+        if ($gist && $gist->getStarred()) {
             return $this->generateResponse(204, 'No Content', '');
         }
         return $this->generateResponse(404, 'Not Found');
