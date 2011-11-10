@@ -35,4 +35,8 @@ $application->setRequest($request);
 
 $bootstrap->bootstrap($application);
 $response = $application->run();
-$response->send();
+if ($response instanceof \Zend\Http\PhpEnvironment\Response) {
+    $response->send();
+} else {
+    echo $response->getBody();
+}
