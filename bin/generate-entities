@@ -1,2 +1,2 @@
 #! /bin/sh
-./modules/SpiffyDoctrine/bin/doctrine orm:generate-entities modules/Gists/src/
+./bin/doctrine orm:generate-entities modules/Gists/src/
