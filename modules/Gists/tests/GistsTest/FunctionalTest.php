@@ -36,7 +36,7 @@ class FunctionalTest extends Framework\TestCase
             ->getCurl()
             ->request('GET', '/gists');
 
-        $this->assertSame('HTTP/1.1 200 Ok', $result['status']);
+        $this->assertSame('HTTP/1.1 200 OK', $result['status']);
 
         $gists = Json::decode(stripslashes($result['body']));
         $this->assertSame(2, count($gists));
@@ -70,7 +70,7 @@ class FunctionalTest extends Framework\TestCase
             ->getCurl()
             ->request('GET', '/gists/starred');
 
-        $this->assertSame('HTTP/1.1 200 Ok', $result['status']);
+        $this->assertSame('HTTP/1.1 200 OK', $result['status']);
 
         $gists = Json::decode(stripslashes($result['body']));
         $this->assertSame(1, count($gists));
@@ -98,7 +98,7 @@ class FunctionalTest extends Framework\TestCase
             ->getCurl()
             ->request('GET', $gist->value);
 
-        $this->assertSame('HTTP/1.1 200 Ok', $result['status']);
+        $this->assertSame('HTTP/1.1 200 OK', $result['status']);
 
         $gist = Json::decode(stripslashes($result['body']));
         $this->assertSame(1, $gist->id);
@@ -124,7 +124,7 @@ class FunctionalTest extends Framework\TestCase
     /**
      * POST /gists
      */
-    public function testCreateGistOk()
+    public function testCreateGistOK()
     {
         // try to create gist w/o providing required field
         $repr = new \StdClass;
@@ -144,7 +144,46 @@ class FunctionalTest extends Framework\TestCase
      * PATCH /gists/:id
      */
     public function testEditGist()
-    {}
+    {
+        $gist = $this->createGist('testEditGist', 'function foo() {}', 1);
+
+        $result = $this
+            ->getCurl()
+            ->request('GET', '/gists/1');
+
+        $this->assertSame('HTTP/1.1 200 OK', $result['status']);
+
+        $gist = Json::decode(stripslashes($result['body']));
+        $this->assertSame(1, $gist->id);
+        $this->assertSame('/users/1', $gist->user);
+        $this->assertSame('testEditGist', $gist->description);
+
+        // edit
+        $repr = new \StdClass;
+        $repr->description = 'testEditGistUpdated';
+        $result = $this
+            ->getCurl()
+            ->request('PATCH', '/gists/1', Json::encode($repr));
+
+        $this->assertSame('HTTP/1.1 200 OK', $result['status']);
+
+        $gist = Json::decode(stripslashes($result['body']));
+        $this->assertSame(1, $gist->id);
+        $this->assertSame('/users/1', $gist->user);
+        $this->assertSame('testEditGistUpdated', $gist->description);
+
+        // check if edited
+        $result = $this
+            ->getCurl()
+            ->request('GET', '/gists/1');
+
+        $this->assertSame('HTTP/1.1 200 OK', $result['status']);
+
+        $gist = Json::decode(stripslashes($result['body']));
+        $this->assertSame(1, $gist->id);
+        $this->assertSame('/users/1', $gist->user);
+        $this->assertSame('testEditGistUpdated', $gist->description);
+    }
 
     /**
      * PUT /gists/:id/star
@@ -200,7 +239,7 @@ class FunctionalTest extends Framework\TestCase
             ->getCurl()
             ->request('GET', $gist->value);
 
-        $this->assertSame('HTTP/1.1 200 Ok', $result['status']);
+        $this->assertSame('HTTP/1.1 200 OK', $result['status']);
 
         $gist = Json::decode(stripslashes($result['body']));
         $this->assertSame(1, $gist->id);

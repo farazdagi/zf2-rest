@@ -37,7 +37,7 @@ class ApiTest extends TestCase
 
         $this->assertInstanceOf('\Zend\\Http\\Response', $response);
         $this->assertSame(200, $response->getStatusCode());
-        $this->assertSame('Ok', $response->getReasonPhrase());
+        $this->assertSame('OK', $response->getReasonPhrase());
 
         $gists = Json::decode(stripslashes($response->getBody()));
         $this->assertSame(2, count($gists));
@@ -66,7 +66,7 @@ class ApiTest extends TestCase
 
         $this->assertInstanceOf('\Zend\\Http\\Response', $response);
         $this->assertSame(200, $response->getStatusCode());
-        $this->assertSame('Ok', $response->getReasonPhrase());
+        $this->assertSame('OK', $response->getReasonPhrase());
 
         $gists = Json::decode(stripslashes($response->getBody()));
         $this->assertSame(1, count($gists));
@@ -89,7 +89,7 @@ class ApiTest extends TestCase
 
         $this->assertInstanceOf('\Zend\\Http\\Response', $response);
         $this->assertSame(200, $response->getStatusCode());
-        $this->assertSame('Ok', $response->getReasonPhrase());
+        $this->assertSame('OK', $response->getReasonPhrase());
 
         $gist = Json::decode(stripslashes($response->getBody()));
         $this->assertSame(1, $gist->id);
@@ -117,7 +117,7 @@ class ApiTest extends TestCase
      * POST /gists
      * Entity manager is closed after exception so we get new one for each testable
      */
-    public function testCreateGistOk()
+    public function testCreateGistOK()
     {
         // try to create gist w/o providing required field
         $repr = new \StdClass;
@@ -134,9 +134,52 @@ class ApiTest extends TestCase
 
     /**
      * PATCH /gists/:id
+     * @group cur
      */
     public function testEditGist()
-    {}
+    {
+        $gist = $this->createGist('testEditGist', 'function foo() {}', 1);
+
+        $response = $this->getService()
+                         ->get(1);
+
+        $this->assertInstanceOf('\Zend\\Http\\Response', $response);
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame('OK', $response->getReasonPhrase());
+
+        $gist = Json::decode(stripslashes($response->getBody()));
+        $this->assertSame(1, $gist->id);
+        $this->assertSame('/users/1', $gist->user);
+        $this->assertSame('testEditGist', $gist->description);
+
+        // edit
+        $repr = new \StdClass;
+        $repr->description = 'testEditGistUpdated';
+        $response = $this->getService()
+                       ->patch($gist->id, Json::encode($repr));
+
+        $this->assertInstanceOf('\Zend\\Http\\Response', $response);
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame('OK', $response->getReasonPhrase());
+
+        $gist = Json::decode(stripslashes($response->getBody()));
+        $this->assertSame(1, $gist->id);
+        $this->assertSame('/users/1', $gist->user);
+        $this->assertSame('testEditGistUpdated', $gist->description);
+
+        // check if edited
+        $response = $this->getService()
+                         ->get(1);
+
+        $this->assertInstanceOf('\Zend\\Http\\Response', $response);
+        $this->assertSame(200, $response->getStatusCode());
+        $this->assertSame('OK', $response->getReasonPhrase());
+
+        $gist = Json::decode(stripslashes($response->getBody()));
+        $this->assertSame(1, $gist->id);
+        $this->assertSame('/users/1', $gist->user);
+        $this->assertSame('testEditGistUpdated', $gist->description);
+    }
 
     /**
      * PUT /gists/:id/star
@@ -170,7 +213,6 @@ class ApiTest extends TestCase
 
     /**
      * DELETE /gists/:id
-     * @group cur
      */
     public function testDeleteGist()
     {
@@ -183,7 +225,7 @@ class ApiTest extends TestCase
 
         $this->assertInstanceOf('\Zend\\Http\\Response', $response);
         $this->assertSame(200, $response->getStatusCode());
-        $this->assertSame('Ok', $response->getReasonPhrase());
+        $this->assertSame('OK', $response->getReasonPhrase());
 
         $gist = Json::decode(stripslashes($response->getBody()));
         $this->assertSame(1, $gist->id);
