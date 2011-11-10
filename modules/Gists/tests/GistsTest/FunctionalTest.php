@@ -6,29 +6,105 @@ use Zend\Json\Json;
 
 class FunctionalTest extends Framework\TestCase
 {
+    /**
+     * @var Gists\Service\Api
+     */
+    protected $service;
+
     public function setUp()
     {
         parent::setup();    // manners
         $this->createDb();  // pdo_sqlite test db
+        $this->service = $this->getLocator()->get('api');
     }
 
     /**
      * GET /gists
      */
     public function testGetGists()
-    {}
+    {
+        // test not found
+        $result = $this
+            ->getCurl()
+            ->request('GET', '/gists');
+        $this->assertSame('HTTP/1.1 404 Not Found', $result['status']);
+
+        $gist = $this->createGist('testGetSingleGist1', 'function foo() {}', 1); // create starred
+        $gist = $this->createGist('testGetSingleGist2', 'function bar() {}');
+
+        $result = $this
+            ->getCurl()
+            ->request('GET', '/gists');
+
+        $this->assertSame('HTTP/1.1 200 Ok', $result['status']);
+
+        $gists = Json::decode(stripslashes($result['body']));
+        $this->assertSame(2, count($gists));
+
+        $this->assertSame(1, $gists[0]->id);
+        $this->assertSame('/users/1', $gists[0]->user);
+        $this->assertSame('testGetSingleGist1', $gists[0]->description);
+        $this->assertSame(1, $gists[0]->starred);
+
+        $this->assertSame(2, $gists[1]->id);
+        $this->assertSame('/users/1', $gists[1]->user);
+        $this->assertSame('testGetSingleGist2', $gists[1]->description);
+        $this->assertSame(0, $gists[1]->starred);
+    }
 
     /**
      * GET /gists/starred
      */
     public function testGetGistsStarred()
-    {}
+    {
+        // test not found
+        $result = $this
+            ->getCurl()
+            ->request('GET', '/gists/starred');
+        $this->assertSame('HTTP/1.1 404 Not Found', $result['status']);
+
+        $gist = $this->createGist('testGetSingleGist1', 'function foo() {}');
+        $gist = $this->createGist('testGetSingleGist2', 'function bar() {}', 1); // create starred
+
+        $result = $this
+            ->getCurl()
+            ->request('GET', '/gists/starred');
+
+        $this->assertSame('HTTP/1.1 200 Ok', $result['status']);
+
+        $gists = Json::decode(stripslashes($result['body']));
+        $this->assertSame(1, count($gists));
+
+        $this->assertSame(2, $gists[0]->id);
+        $this->assertSame('/users/1', $gists[0]->user);
+        $this->assertSame('testGetSingleGist2', $gists[0]->description);
+        $this->assertSame(1, $gists[0]->starred);
+    }
 
     /**
      * GET /gist/:id
      */
     public function testGetSingleGist()
-    {}
+    {
+        // test not found
+        $result = $this
+            ->getCurl()
+            ->request('GET', '/gists/' . 42);
+
+        $this->assertSame('HTTP/1.1 404 Not Found', $result['status']);
+
+        $gist = $this->createGist('testGetSingleGist', 'function bar() {}');
+        $result = $this
+            ->getCurl()
+            ->request('GET', $gist->value);
+
+        $this->assertSame('HTTP/1.1 200 Ok', $result['status']);
+
+        $gist = Json::decode(stripslashes($result['body']));
+        $this->assertSame(1, $gist->id);
+        $this->assertSame('/users/1', $gist->user);
+        $this->assertSame('testGetSingleGist', $gist->description);
+    }
 
     /**
      * POST /gists
@@ -40,14 +116,13 @@ class FunctionalTest extends Framework\TestCase
 
         $result = $this
             ->getCurl()
-            ->post('/gists', Json::encode($repr));
+            ->request('POST', '/gists', Json::encode($repr));
 
         $this->assertSame('HTTP/1.1 400 Bad Request', $result['status']);
     }
 
     /**
      * POST /gists
-     * @group cur
      */
     public function testCreateGistOk()
     {
@@ -58,7 +133,7 @@ class FunctionalTest extends Framework\TestCase
 
         $result = $this
             ->getCurl()
-            ->post('/gists', Json::encode($repr));
+            ->request('POST', '/gists', Json::encode($repr));
 
         $this->assertSame('HTTP/1.1 201 Created', $result['status']);
         $this->assertTrue(isset($result['headers']['Location']));
@@ -80,9 +155,25 @@ class FunctionalTest extends Framework\TestCase
 
     /**
      * GET /gists/:id/star
+     * @group cur
      */
     public function testIsGistStared()
-    {}
+    {
+        $gist1 = $this->createGist('testIsGistStared1', 'function foo() {}', 1);
+        $gist2 = $this->createGist('testIsGistStared2', 'function bar() {}');
+
+        $result = $this
+            ->getCurl()
+            ->request('GET', $gist1->value . '/star');
+
+        $this->assertSame('HTTP/1.1 204 No Content', $result['status']);
+
+        $result = $this
+            ->getCurl()
+            ->request('GET', $gist2->value . '/star');
+
+        $this->assertSame('HTTP/1.1 404 Not Found', $result['status']);
+    }
 
     /**
      * DELETE /gists/:id
@@ -94,6 +185,20 @@ class FunctionalTest extends Framework\TestCase
     {
         return new Curl();
     }
+
+    protected function createGist($description, $content, $starred = 0)
+    {
+        $repr = new \StdClass;
+        $repr->description = $description;
+        $repr->content = $content;
+        $repr->starred = $starred;
+
+        $response = $this->service
+            ->setUserCredentials('horus', 'mypass')
+            ->create(Json::encode($repr));
+
+        return $response->headers()->get('Location');
+    }
 }
 
 class Curl
@@ -101,17 +206,24 @@ class Curl
     private $baseUri = 'http://api.zfbook.com';
     private $user = 'horus:mypass';
 
-    public function post($uri, $data)
+    public function request($method, $uri, $data = null)
     {
         $ch = curl_init();
 
         curl_setopt($ch, CURLOPT_URL, $this->baseUri . $uri);
         curl_setopt($ch, CURLOPT_USERPWD, $this->user);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-        curl_setopt($ch, CURLOPT_POST, 1);
+        //curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
         curl_setopt($ch, CURLOPT_HEADER, 1);
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
-        curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-Type: application/json'));
+
+        if ($data) {
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+            curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+                'Content-Length: ' . strlen($data),
+                'Content-Type: application/json'
+            ));
+        }
 
         $response = curl_exec($ch);
         $info = curl_getinfo($ch);
