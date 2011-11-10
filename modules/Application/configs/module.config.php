@@ -58,6 +58,10 @@ return array(
                         'dbname'   => 'zf2gists',
                     ),
                     'config' => array(
+                        'auto_generate_proxies'     => true,
+                        // @todo: figure out how to de_couple the Proxy dir
+                        'proxy_dir'                 => realpath(__DIR__ . '/../../Gists/src/Gists/Proxy'),
+                        'proxy_namespace'           => 'Gists\Proxy',
                         'metadata_driver_impl' => array(
                             // to add multiple drivers just follow the format below and give them a different keyed name
                             // cache_class is only required for annotation drivers
