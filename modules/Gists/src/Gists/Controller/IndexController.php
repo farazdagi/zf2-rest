@@ -50,7 +50,6 @@ class IndexController extends RestfulController
                     ->create($data);
     }
 
-
     /**
      * Update an existing gist property (property should be entity)
      *
@@ -62,14 +61,12 @@ class IndexController extends RestfulController
      */
     public function update($id, $data)
     {
-        $filter = $this
-            ->getEvent()
-            ->getRouteMatch()
-            ->getParam('filter');
-        if ($property = $this->getEvent()->getRouteMatch()->getParam('property')) {
-            return 'PUT gists/:' . $id . '/:' . $property;
+        $property = $this->getEvent()->getRouteMatch()->getParam('property');
+        if ($property) {
+            return $this->getService()
+                        ->updateProperty($id, $property, $data);
         }
-        throw new \DomainException('Missing entity');
+        return $this->generateResponse(400, 'Bad Request');
     }
 
     /**
@@ -92,10 +89,13 @@ class IndexController extends RestfulController
      */
     public function delete($id)
     {
-        if ($property = $this->getEvent()->getRouteMatch()->getParam('property')) {
-            return 'DELETE gists/:' . $id . '/:' . $property;
+        $property = $this->getEvent()->getRouteMatch()->getParam('property');
+        if ($property) {
+            return $this->getService()
+                        ->deleteProperty($id, $property);
         }
-        return 'DELETE gists/:' . $id;
+        return $this->getService()
+                    ->delete($id);
     }
 
     /**
