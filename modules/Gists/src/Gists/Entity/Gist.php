@@ -45,6 +45,7 @@ class Gist
         $repr->description = $this->getDescription();
         $repr->content = $this->getContent();
         $repr->starred = (int)$this->getStarred();
+        $repr->url = '/gists/' . $this->getId();
         return $repr;
     }
 
