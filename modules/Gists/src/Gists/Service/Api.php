@@ -52,7 +52,7 @@ class Api
                     'Location' => sprintf('/gists/%d', $gist->getId())
                 ));
             } catch (\Exception $e) {
-                // log, process error
+                // log, process error, re-throw
             }
         }
 
