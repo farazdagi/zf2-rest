@@ -19,7 +19,7 @@ return array(
                 'index' => 'Application\Controller\IndexController',
                 'error' => 'Application\Controller\ErrorController',
                 'view'  => 'Zend\View\PhpRenderer',
-                'api'           => 'Gists\Service\Api',
+                'api'   => 'Gists\Service\Api',
             ),
 
             'Zend\View\HelperLoader' => array(
@@ -64,7 +64,7 @@ return array(
                             'application_annotation_driver' => array(
                                 'class' => 'Doctrine\ORM\Mapping\Driver\AnnotationDriver',
                                 'namespace' => 'Gists\Entity',
-                                'paths' => array(__DIR__ . '/../../Gists/src/Gists/Entity'),
+                                'paths' => array(realpath(__DIR__ . '/../../Gists/src/Gists/Entity')),
                                 'cache_class' => 'Doctrine\Common\Cache\ArrayCache',
                             )
                         )
