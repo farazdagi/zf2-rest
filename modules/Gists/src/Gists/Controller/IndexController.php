@@ -78,7 +78,8 @@ class IndexController extends RestfulController
      */
     public function patch($id, $data)
     {
-        return 'PATCH gists/:' . $id;
+        return $this->getService()
+                    ->patch($id, $data);
     }
 
     /**
