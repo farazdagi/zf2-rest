@@ -36,7 +36,7 @@ class Gist
     /**
      * Get id
      *
-     * @return integer 
+     * @return integer
      */
     public function getId()
     {
@@ -56,7 +56,7 @@ class Gist
     /**
      * Get description
      *
-     * @return string 
+     * @return string
      */
     public function getDescription()
     {
@@ -76,7 +76,7 @@ class Gist
     /**
      * Get content
      *
-     * @return text 
+     * @return text
      */
     public function getContent()
     {
@@ -96,7 +96,7 @@ class Gist
     /**
      * Get user
      *
-     * @return Gists\Entity\User 
+     * @return Gists\Entity\User
      */
     public function getUser()
     {
