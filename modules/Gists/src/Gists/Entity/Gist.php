@@ -44,7 +44,7 @@ class Gist
         $repr->user = '/users/' . $this->getUser()->getId();
         $repr->description = $this->getDescription();
         $repr->content = $this->getContent();
-        $repr->starred = $this->getStarred();
+        $repr->starred = (int)$this->getStarred();
         return $repr;
     }
 
