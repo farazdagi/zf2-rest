@@ -11,7 +11,7 @@ return array(
         'gists' => array(
             'type'    => 'Zend\Mvc\Router\Http\Regex',
             'options' => array(
-                'regex'    => '/gists(/(?<id>[0-9]+[^/]+)(/(?<property>[^/]+))?)?',
+                'regex'    => '/gists(/(?<id>[0-9]*[^/]+)(/(?<property>[^/]+))?)?',
                 'spec'     => '/%controller%/%id%/%property%',
                 'defaults' => array(
                     'controller' => 'gists_index',

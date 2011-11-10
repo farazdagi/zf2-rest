@@ -19,32 +19,68 @@ abstract class RestfulController extends BaseRestfulController
 
     public function execute(MvcEvent $e)
     {
-        try {
-            $response = parent::execute($e);
-            return $response;
-        } catch (\DomainException $ex) {
-            if ('Invalid HTTP method!' !== $ex->getMessage()) {
-                throw $ex;
-            }
+        $routeMatch = $e->getRouteMatch();
+        if (!$routeMatch) {
+            /**
+             * @todo Determine requirements for when route match is missing.
+             *       Potentially allow pulling directly from request metadata?
+             */
+            throw new \DomainException('Missing route matches; unsure how to retrieve action');
         }
 
-        $routeMatch = $e->getRouteMatch();
         $request = $e->getRequest();
-
-        // custom RESTful methods
-        switch (strtolower($request->getMethod())) {
-            case 'patch':
-                if (null === $id = $routeMatch->getParam('id')) {
-                    if (!($id = $request->query()->get('id', false))) {
-                        throw new \DomainException('Missing identifier');
+        $action  = $routeMatch->getParam('action', false);
+        if ($action) {
+            // Handle arbitrary methods, ending in Action
+            $method = static::getMethodFromAction($action);
+            if (!method_exists($this, $method)) {
+                $method = 'notFoundAction';
+            }
+            $return = $this->$method();
+        } else {
+            // RESTful methods
+            switch (strtolower($request->getMethod())) {
+                case 'get':
+                    if (null !== $id = $routeMatch->getParam('id')) {
+                        $return = $this->get($id);
+                        break;
                     }
-                }
-                $content = $request->getContent();
-                parse_str($content, $parsedParams);
-                $return = $this->patch($id, $parsedParams);
-                break;
-            default:
-                throw new \DomainException('Invalid HTTP method!');
+                    if (null !== $id = $request->query()->get('id')) {
+                        $return = $this->get($id);
+                        break;
+                    }
+                    $return = $this->getList();
+                    break;
+                case 'post':
+                    $return = $this->create($request->getRawPostData());
+                    break;
+                case 'patch':
+                    if (null === $id = $routeMatch->getParam('id')) {
+                        if (!($id = $request->query()->get('id', false))) {
+                            throw new \DomainException('Missing identifier');
+                        }
+                    }
+                    $return = $this->patch($id, $request->getRawPostData());
+                    break;
+                case 'put':
+                    if (null === $id = $routeMatch->getParam('id')) {
+                        if (!($id = $request->query()->get('id', false))) {
+                            throw new \DomainException('Missing identifier');
+                        }
+                    }
+                    $return = $this->update($id, $request->getRawPostData());
+                    break;
+                case 'delete':
+                    if (null === $id = $routeMatch->getParam('id')) {
+                        if (!($id = $request->query()->get('id', false))) {
+                            throw new \DomainException('Missing identifier');
+                        }
+                    }
+                    $return = $this->delete($id);
+                    break;
+                default:
+                    throw new \DomainException('Invalid HTTP method!');
+            }
         }
 
         // Emit post-dispatch signal, passing:

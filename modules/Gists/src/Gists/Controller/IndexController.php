@@ -4,7 +4,8 @@ namespace Gists\Controller;
 
 use Gists\Mvc\Controller\RestfulController,
     Zend\Http\Exception\InvalidArgumentException,
-    Zend\Mvc\MvcEvent;
+    Zend\Mvc\MvcEvent,
+    Zend\Http;
 
 class IndexController extends RestfulController
 {
@@ -15,10 +16,9 @@ class IndexController extends RestfulController
      */
     public function getList()
     {
-        if ($filter = $this->getEvent()->getRouteMatch()->getParam('filter')) {
-            return 'GET gists/' . $filter;
-        }
-        return 'GET gists';
+        $filter = $this->getEvent()->getRouteMatch()->getParam('filter', null);
+        return $this->getService()
+                    ->getList($filter);
     }
 
     /**
@@ -29,10 +29,13 @@ class IndexController extends RestfulController
      */
     public function get($id)
     {
-        if ($property = $this->getEvent()->getRouteMatch()->getParam('property')) {
-            return 'GET gists/:' . $id . '/:' . $property;
+        $property = $this->getEvent()->getRouteMatch()->getParam('property', null);
+        if ($property == 'star') {
+            return $this->getService()
+                        ->isStarred($id);
         }
-        return 'GET gists/:' . $id;
+        return $this->getService()
+                    ->get($id);
     }
 
     /**
@@ -43,7 +46,8 @@ class IndexController extends RestfulController
      */
     public function create($data)
     {
-        return 'POST /gists';
+        return $this->getService()
+                    ->create($data);
     }
 
     /**
@@ -57,10 +61,12 @@ class IndexController extends RestfulController
      */
     public function update($id, $data)
     {
-        if ($property = $this->getEvent()->getRouteMatch()->getParam('property')) {
-            return 'PUT gists/:' . $id . '/:' . $property;
+        $property = $this->getEvent()->getRouteMatch()->getParam('property');
+        if ($property) {
+            return $this->getService()
+                        ->putProperty($id, $property, $data);
         }
-        throw new \DomainException('Missing entity');
+        return $this->generateResponse(400, 'Bad Request');
     }
 
     /**
@@ -72,7 +78,8 @@ class IndexController extends RestfulController
      */
     public function patch($id, $data)
     {
-        return 'PATCH gists/:' . $id;
+        return $this->getService()
+                    ->patch($id, $data);
     }
 
     /**
@@ -83,10 +90,28 @@ class IndexController extends RestfulController
      */
     public function delete($id)
     {
-        if ($property = $this->getEvent()->getRouteMatch()->getParam('property')) {
-            return 'DELETE gists/:' . $id . '/:' . $property;
+        $property = $this->getEvent()->getRouteMatch()->getParam('property');
+        if ($property) {
+            return $this->getService()
+                        ->deleteProperty($id, $property);
         }
-        return 'DELETE gists/:' . $id;
+        return $this->getService()
+                    ->delete($id);
+    }
+
+    /**
+     * Initialize and get service
+     *
+     * @return Gists\Service\Api
+     */
+    protected function getService()
+    {
+        return $this
+            ->getLocator()->get('api')
+            ->setUserCredentials(
+                $this->getRequest()->server()->get('PHP_AUTH_USER', null),
+                $this->getRequest()->server()->get('PHP_AUTH_PW', null)
+            );
     }
 
 }
