@@ -60,9 +60,7 @@ abstract class RestfulController extends BaseRestfulController
                             throw new \DomainException('Missing identifier');
                         }
                     }
-                    $content = $request->getContent();
-                    parse_str($content, $parsedParams);
-                    $return = $this->patch($id, $parsedParams);
+                    $return = $this->patch($id, $request->getRawPostData());
                     break;
                 case 'put':
                     if (null === $id = $routeMatch->getParam('id')) {
@@ -70,9 +68,7 @@ abstract class RestfulController extends BaseRestfulController
                             throw new \DomainException('Missing identifier');
                         }
                     }
-                    $content = $request->getContent();
-                    parse_str($content, $parsedParams);
-                    $return = $this->update($id, $parsedParams);
+                    $return = $this->update($id, $request->getRawPostData());
                     break;
                 case 'delete':
                     if (null === $id = $routeMatch->getParam('id')) {
