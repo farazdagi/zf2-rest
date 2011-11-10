@@ -34,4 +34,5 @@ $request = new Application\Http\PhpEnvironment\Request();
 $application->setRequest($request);
 
 $bootstrap->bootstrap($application);
-echo $application->run()->getBody();
+$response = $application->run();
+$response->send();
