@@ -190,7 +190,41 @@ class FunctionalTest extends Framework\TestCase
      * DELETE /gists/:id/star
      */
     public function testStarUnstarGist()
-    {}
+    {
+        $gist = $this->createGist('testStarUnstarGist', 'function foo() {}', 1);
+
+        $gistUrl = $gist->value;
+
+        // check that starred
+        $result = $this
+            ->getCurl()
+            ->request('GET', $gistUrl . '/star');
+        $this->assertSame('HTTP/1.1 204 No Content', $result['status']);
+
+        // unstar
+        $result = $this
+            ->getCurl()
+            ->request('DELETE', $gistUrl . '/star', '');
+        $this->assertSame('HTTP/1.1 204 No Content', $result['status']);
+
+        // check that unstarred
+        $result = $this
+            ->getCurl()
+            ->request('GET', $gistUrl . '/star');
+        $this->assertSame('HTTP/1.1 404 Not Found', $result['status']);
+
+        // star
+        $result = $this
+            ->getCurl()
+            ->request('PUT', $gistUrl . '/star', '');
+        $this->assertSame('HTTP/1.1 204 No Content', $result['status']);
+
+        // check that starred
+        $result = $this
+            ->getCurl()
+            ->request('GET', $gistUrl . '/star');
+        $this->assertSame('HTTP/1.1 204 No Content', $result['status']);
+    }
 
     /**
      * GET /gists/:id/star
@@ -297,7 +331,7 @@ class Curl
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $method);
         curl_setopt($ch, CURLOPT_HEADER, 1);
 
-        if ($data) {
+        if (null !== $data) {
             curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
             curl_setopt($ch, CURLOPT_HTTPHEADER, array(
                 'Content-Length: ' . strlen($data),

@@ -134,7 +134,6 @@ class ApiTest extends TestCase
 
     /**
      * PATCH /gists/:id
-     * @group cur
      */
     public function testEditGist()
     {
@@ -184,9 +183,52 @@ class ApiTest extends TestCase
     /**
      * PUT /gists/:id/star
      * DELETE /gists/:id/star
+     * @group cur
      */
     public function testStarUnstarGist()
-    {}
+    {
+        $gist = $this->createGist('testStarUnstarGist', 'function foo() {}', 1);
+
+        // check that starred
+        $response = $this->getService()
+                         ->isStarred(1);
+
+        $this->assertInstanceOf('\Zend\\Http\\Response', $response);
+        $this->assertSame(204, $response->getStatusCode());
+        $this->assertSame('No Content', $response->getReasonPhrase());
+
+        // unstar
+        $response = $this->getService()
+            ->deleteProperty(1, 'star');
+
+        $this->assertInstanceOf('\Zend\\Http\\Response', $response);
+        $this->assertSame(204, $response->getStatusCode());
+        $this->assertSame('No Content', $response->getReasonPhrase());
+
+        // check that unstarred
+        $response = $this->getService()
+                         ->isStarred(2);
+
+        $this->assertInstanceOf('\Zend\\Http\\Response', $response);
+        $this->assertSame(404, $response->getStatusCode());
+        $this->assertSame('Not Found', $response->getReasonPhrase());
+
+        // star
+        $response = $this->getService()
+            ->putProperty(1, 'star');
+
+        $this->assertInstanceOf('\Zend\\Http\\Response', $response);
+        $this->assertSame(204, $response->getStatusCode());
+        $this->assertSame('No Content', $response->getReasonPhrase());
+
+        // check that starred
+        $response = $this->getService()
+                         ->isStarred(1);
+
+        $this->assertInstanceOf('\Zend\\Http\\Response', $response);
+        $this->assertSame(204, $response->getStatusCode());
+        $this->assertSame('No Content', $response->getReasonPhrase());
+    }
 
     /**
      * GET /gists/:id/star
