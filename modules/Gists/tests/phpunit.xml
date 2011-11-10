@@ -13,7 +13,7 @@
          strict="true">
     <testsuites>
         <testsuite name="Gists Module Test Suite">
-            <directory>./GistsTest</directory>
+            <directory suffix=".php">./GistsTest</directory>
         </testsuite>
     </testsuites>
     <groups>
