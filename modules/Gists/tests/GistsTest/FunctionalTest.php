@@ -47,6 +47,7 @@ class FunctionalTest extends Framework\TestCase
 
     /**
      * POST /gists
+     * @group cur
      */
     public function testCreateGistOk()
     {
@@ -60,6 +61,8 @@ class FunctionalTest extends Framework\TestCase
             ->post('/gists', Json::encode($repr));
 
         $this->assertSame('HTTP/1.1 201 Created', $result['status']);
+        $this->assertTrue(isset($result['headers']['Location']));
+        $this->assertSame('/gists/1', $result['headers']['Location']);
     }
 
     /**
@@ -115,13 +118,20 @@ class Curl
 
         curl_close($ch);
 
-        $headers = substr($response, 0, $info['header_size']);
+        $header = substr($response, 0, $info['header_size']);
         $body = '';
         if ($info['download_content_length']) {
             $body = substr($response, -$info['download_content_length']);
         }
-        $status = strtok($headers, "\r\n");
+        $status = strtok($header, "\r\n");
 
+        $headers = array();
+        foreach (explode("\r\n", $header) as $header) {
+            if (trim($header) && strpos($header, ':') !== false) {
+                list($key, $value) = explode(':', $header);
+                $headers[trim($key)] = trim($value);
+            }
+        }
         return array(
             'headers'   => $headers,
             'body'      => $body,
