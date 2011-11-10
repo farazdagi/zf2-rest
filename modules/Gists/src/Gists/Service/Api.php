@@ -134,6 +134,19 @@ class Api
         return $this->generateResponse(404, 'Not Found');
     }
 
+    public function putProperty($id, $property, $data = null)
+    {
+        if ('star' === $property) {
+            $gist = $this->em->find('Gists\Entity\Gist', $id);
+            if ($gist) {
+                $gist->setStarred(1);
+                $this->em->flush();
+                return $this->generateResponse(204, 'No Content', '');
+            }
+        }
+        return $this->generateResponse(404, 'Not Found');
+    }
+
     public function deleteProperty($id, $property)
     {
         // strategy pattern will be a better solution here
